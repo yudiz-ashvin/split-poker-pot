@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pot Distribution Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-section {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .player-inputs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .player-list {
+            margin: 20px 0;
+        }
+
+        .player-item {
+            display: flex;
+            gap: 10px;
+            margin: 5px 0;
+            padding: 5px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .results {
+            margin-top: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f8f9fa;
+        }
+
+        select,
+        input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .preset-buttons {
+            margin: 20px 0;
+        }
+
+        .distribution-breakdown {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        .distribution-breakdown p {
+            margin: 8px 0;
+            font-family: monospace;
+        }
+
+        .player-amount {
+            font-weight: bold;
+            color: #28a745;
+        }
+
+        .remove-btn {
+            background-color: #dc3545;
+        }
+
+        .remove-btn:hover {
+            background-color: #c82333;
+        }
+
+        .results-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .player-section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+        }
+
+        .player-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background-color: white;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .player-id {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .player-timing {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .amount-breakdown {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .total-amount {
+            font-weight: bold;
+            color: #28a745;
+            font-size: 1.1em;
+        }
+
+        .amount-details {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .bonus-percent {
+            background-color: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+            margin-left: 5px;
+            font-size: 0.8em;
+            color: #495057;
+        }
+
+        .total-pot {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 6px;
+            font-weight: bold;
+            text-align: right;
+            color: #2c3e50;
+            font-size: 1.1em;
+        }
+
+        h4 {
+            color: #495057;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Pot Distribution Calculator</h1>
+
+        <div class="input-section">
+            <h3>Pot Amount</h3>
+            <input type="number" id="potAmount" value="1000" min="1">
+
+            <h3>Add Player</h3>
+            <div class="player-inputs">
+                <input type="text" id="playerId" placeholder="Player ID">
+                <input type="number" id="playerScore" placeholder="Score" min="0" max="21">
+                <select id="playerAction">
+                    <option value="NONE">No Action</option>
+                    <option value="DD">Double Down</option>
+                    <option value="STAND">Stand</option>
+                </select>
+                <select id="standTiming" disabled>
+                    <option value="1">After 1 Card</option>
+                    <option value="2">After 2 Cards</option>
+                    <option value="3">After 3 Cards</option>
+                </select>
+                <button onclick="addPlayer()">Add Player</button>
+            </div>
+        </div>
+
+        <div class="player-list" id="playerList">
+            <h3>Current Players</h3>
+            <!-- Players will be added here -->
+        </div>
+
+        <button onclick="calculateDistribution()">Calculate Distribution</button>
+
+        <div class="preset-buttons">
+            <h3>Test Scenarios</h3>
+            <button onclick="loadTestScenario(1)">All Types</button>
+            <button onclick="loadTestScenario(2)">DD vs No Action</button>
+            <button onclick="loadTestScenario(3)">All Stand</button>
+            <button onclick="loadTestScenario(4)">No Action vs Stand</button>
+            <button onclick="loadTestScenario(5)">DD vs Stand</button>
+        </div>
+
+        <div class="results" id="results">
+            <!-- Results will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        let players = [];
+
+        // Enable/disable stand timing based on action selection
+        document.getElementById('playerAction').addEventListener('change', function (e)
+        {
+            const standTiming = document.getElementById('standTiming');
+            standTiming.disabled = e.target.value !== 'STAND';
+        });
+
+        function addPlayer ()
+        {
+            const id = document.getElementById('playerId').value;
+            const action = document.getElementById('playerAction').value;
+            const standTiming = document.getElementById('standTiming').value;
+
+            if (!id)
+            {
+                alert('Please enter a Player ID');
+                return;
+            }
+
+            const score = parseInt(document.getElementById('playerScore').value);
+            if (isNaN(score) || score < 0 || score > 21)
+            {
+                alert('Please enter a valid score between 0 and 21');
+                return;
+            }
+
+            const player = {
+                id: id,
+                score: score,
+                action: action,
+                standTiming: action === 'STAND' ? parseInt(standTiming) : undefined
+            };
+
+            players.push(player);
+            updatePlayerList();
+            clearInputs();
+        }
+
+        function removePlayer (index)
+        {
+            players.splice(index, 1);
+            updatePlayerList();
+        }
+
+        function updatePlayerList ()
+        {
+            const list = document.getElementById('playerList');
+            list.innerHTML = '<h3>Current Players</h3>';
+
+            players.forEach((player, index) =>
+            {
+                const div = document.createElement('div');
+                div.className = 'player-item';
+                div.innerHTML = `
+                    <span>ID: ${ player.id }</span>
+                    <span>Action: ${ player.action }</span>
+                    ${ player.standTiming ? `<span>Stand Timing: ${ player.standTiming }</span>` : '' }
+                    <button class="remove-btn" onclick="removePlayer(${ index })">Remove</button>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function clearInputs ()
+        {
+            document.getElementById('playerId').value = '';
+            document.getElementById('playerAction').value = 'NONE';
+            document.getElementById('standTiming').value = '1';
+            document.getElementById('standTiming').disabled = true;
+        }
+
+        function splitPot (players, potAmount)
+        {
+            let ddPlayers = [];
+            let standPlayers = [];
+            let noActionPlayers = [];
+
+            // Categorize players
+            players.forEach(player =>
+            {
+                if (player.action === 'DD')
+                {
+                    ddPlayers.push(player);
+                } else if (player.action === 'STAND')
+                {
+                    standPlayers.push(player);
+                } else
+                {
+                    noActionPlayers.push(player);
+                }
+            });
+
+            let totalBonusAmount = 0;
+
+            // 1. No Action Players (30% split)
+            let noActionBonusPerPlayer = noActionPlayers.length > 0 ? (0.3 * potAmount) / noActionPlayers.length : 0;
+            let noActionBonuses = noActionPlayers.map(() =>
+            {
+                totalBonusAmount += noActionBonusPerPlayer;
+                return noActionBonusPerPlayer;
+            });
+
+            // 2. Stand Players (bonus split among same timing)
+            let standBonuses = standPlayers.map(player =>
+            {
+                let bonusPercent = 0;
+                if (player.standTiming === 3) bonusPercent = 0.2;
+                else if (player.standTiming === 2) bonusPercent = 0.15;
+                else if (player.standTiming === 1) bonusPercent = 0.1;
+
+                const sameTimingCount = standPlayers.filter(p => p.standTiming === player.standTiming).length;
+                const bonus = (bonusPercent * potAmount) / sameTimingCount;
+                totalBonusAmount += bonus;
+                return bonus;
+            });
+
+            // 3. DD Players (5% split)
+            let ddBonusPerPlayer = ddPlayers.length > 0 ? (0.05 * potAmount) / ddPlayers.length : 0;
+            totalBonusAmount += ddBonusPerPlayer * ddPlayers.length;
+
+            // Calculate remaining amount
+            const remainingAmount = Math.max(0, potAmount - totalBonusAmount);
+            const totalPlayers = players.length;
+            const baseAmount = remainingAmount / totalPlayers;
+
+            return {
+                DD_Players: ddPlayers.map(player => ({
+                    id: player.id,
+                    amount: baseAmount + ddBonusPerPlayer
+                })),
+                Stand_Players: standPlayers.map((player, index) => ({
+                    id: player.id,
+                    amount: baseAmount + standBonuses[index],
+                    standTiming: player.standTiming
+                })),
+                No_Action_Players: noActionPlayers.map((player, index) => ({
+                    id: player.id,
+                    amount: baseAmount + noActionBonuses[index]
+                })),
+                Pot_Amount: potAmount
+            };
+        }
+
+        function calculateDistribution ()
+        {
+            if (players.length === 0)
+            {
+                alert('Please add at least one player');
+                return;
+            }
+
+            const potAmount = parseFloat(document.getElementById('potAmount').value);
+            if (isNaN(potAmount) || potAmount <= 0)
+            {
+                alert('Please enter a valid pot amount');
+                return;
+            }
+
+            const result = splitPot(players, potAmount);
+            displayResults(result);
+        }
+
+        function displayResults (result)
+        {
+            const resultsDiv = document.getElementById('results');
+            let html = '<div class="results-container">';
+            html += '<h2>Distribution Results</h2>';
+
+            // Calculate total players
+            const totalPlayers = (result.Stand_Players.length +
+                result.DD_Players.length +
+                result.No_Action_Players.length);
+            const baseAmount = (result.Pot_Amount - calculateTotalBonuses(result)) / totalPlayers;
+
+            // Stand Players section
+            if (result.Stand_Players.length > 0)
+            {
+                html += '<div class="player-section">';
+                html += '<h4>Stand Players:</h4>';
+                result.Stand_Players.forEach((player, index) =>
+                {
+                    const sameTimingCount = result.Stand_Players.filter(p => p.standTiming === player.standTiming).length;
+                    let bonusPercent = player.standTiming === 3 ? 20 : player.standTiming === 2 ? 15 : 10;
+                    const bonus = ((bonusPercent / 100) * result.Pot_Amount) / sameTimingCount;
+
+                    html += `
+                        <div class="player-row">
+                            <div class="player-info">
+                                <span class="player-id">${ player.id }</span>
+                                <span class="player-timing">(Stand After ${ player.standTiming } Cards)</span>
+                            </div>
+                            <div class="amount-breakdown">
+                                <span class="total-amount">₹${ player.amount.toFixed(2) }</span>
+                                <span class="amount-details">
+                                    = Base (₹${ baseAmount.toFixed(2) }) + Bonus (₹${ bonus.toFixed(2) })
+                                    <span class="bonus-percent">${ bonusPercent }% of pot</span>
+                                </span>
+                            </div>
+                        </div>`;
+                });
+                html += '</div>';
+            }
+
+            // Double Down Players section
+            if (result.DD_Players.length > 0)
+            {
+                html += '<div class="player-section">';
+                html += '<h4>Double Down Players:</h4>';
+                result.DD_Players.forEach(player =>
+                {
+                    const bonus = (0.05 * result.Pot_Amount) / result.DD_Players.length;
+
+                    html += `
+                        <div class="player-row">
+                            <div class="player-info">
+                                <span class="player-id">${ player.id }</span>
+                            </div>
+                            <div class="amount-breakdown">
+                                <span class="total-amount">₹${ player.amount.toFixed(2) }</span>
+                                <span class="amount-details">
+                                    = Base (₹${ baseAmount.toFixed(2) }) + Bonus (₹${ bonus.toFixed(2) })
+                                    <span class="bonus-percent">5% of pot</span>
+                                </span>
+                            </div>
+                        </div>`;
+                });
+                html += '</div>';
+            }
+
+            // No Action Players section
+            if (result.No_Action_Players.length > 0)
+            {
+                html += '<div class="player-section">';
+                html += '<h4>No Action Players:</h4>';
+                result.No_Action_Players.forEach(player =>
+                {
+                    const bonus = (0.3 * result.Pot_Amount) / result.No_Action_Players.length;
+
+                    html += `
+                        <div class="player-row">
+                            <div class="player-info">
+                                <span class="player-id">${ player.id }</span>
+                            </div>
+                            <div class="amount-breakdown">
+                                <span class="total-amount">₹${ player.amount.toFixed(2) }</span>
+                                <span class="amount-details">
+                                    = Base (₹${ baseAmount.toFixed(2) }) + Bonus (₹${ bonus.toFixed(2) })
+                                    <span class="bonus-percent">30% of pot</span>
+                                </span>
+                            </div>
+                        </div>`;
+                });
+                html += '</div>';
+            }
+
+            html += `<div class="total-pot">Total Pot Amount: ₹${ result.Pot_Amount.toFixed(2) }</div>`;
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+        }
+
+        // Helper function to calculate total bonuses
+        function calculateTotalBonuses (result)
+        {
+            let total = 0;
+
+            // Stand bonuses
+            result.Stand_Players.forEach(player =>
+            {
+                const bonusPercent = player.standTiming === 3 ? 20 : player.standTiming === 2 ? 15 : 10;
+                const sameTimingCount = result.Stand_Players.filter(p => p.standTiming === player.standTiming).length;
+                total += ((bonusPercent / 100) * result.Pot_Amount) / sameTimingCount;
+            });
+
+            // DD bonuses
+            if (result.DD_Players.length > 0)
+            {
+                total += (0.05 * result.Pot_Amount);
+            }
+
+            // No Action bonuses
+            if (result.No_Action_Players.length > 0)
+            {
+                total += (0.3 * result.Pot_Amount);
+            }
+
+            return total;
+        }
+
+        function loadTestScenario (scenario)
+        {
+            players = [];
+            switch (scenario)
+            {
+                case 1: // All types
+                    players = [
+                        { id: 'No_Action', action: 'NONE' },
+                        { id: 'DD_Player', action: 'DD' },
+                        { id: 'Stand_1', action: 'STAND', standTiming: 1 },
+                        { id: 'Stand_2', action: 'STAND', standTiming: 2 },
+                        { id: 'Stand_3', action: 'STAND', standTiming: 3 }
+                    ];
+                    break;
+                case 2: // DD vs No Action
+                    players = [
+                        { id: 'DD_Player', action: 'DD' },
+                        { id: 'No_Action', action: 'NONE' }
+                    ];
+                    break;
+                case 3: // All Stand
+                    players = [
+                        { id: 'Stand_1', action: 'STAND', standTiming: 1 },
+                        { id: 'Stand_2', action: 'STAND', standTiming: 2 },
+                        { id: 'Stand_3', action: 'STAND', standTiming: 3 }
+                    ];
+                    break;
+                case 4: // No action vs Stand
+                    players = [
+                        { id: 'No_Action', action: 'NONE' },
+                        { id: 'Stand_3', action: 'STAND', standTiming: 3 }
+                    ];
+                    break;
+                case 5: // DD vs Stand
+                    players = [
+                        { id: 'DD_Player', action: 'DD' },
+                        { id: 'Stand_3', action: 'STAND', standTiming: 3 }
+                    ];
+                    break;
+            }
+            updatePlayerList();
+            calculateDistribution();
+        }
+    </script>
+</body>
+
+</html>
