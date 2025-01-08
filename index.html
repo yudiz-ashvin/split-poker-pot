@@ -223,6 +223,74 @@
 
 <!--     <script src="splitPot.js"></script> -->
     <script>
+    function splitPot(players, potAmount) {
+  let ddPlayers = [];
+  let standPlayers = [];
+  let noActionPlayers = [];
+
+  // Categorize players
+  players.forEach(player => {
+    if (player.action === 'DD') {
+      ddPlayers.push(player);
+    } else if (player.action === 'STAND') {
+      standPlayers.push(player);
+    } else {
+      noActionPlayers.push(player);
+    }
+  });
+
+  let totalBonusAmount = 0;
+
+  // 1. No Action Players (30% split among all no action players)
+  let noActionBonusPerPlayer = noActionPlayers.length > 0 ? (0.3 * potAmount) / noActionPlayers.length : 0;
+  let noActionBonuses = noActionPlayers.map(() => {
+    totalBonusAmount += noActionBonusPerPlayer;
+    return noActionBonusPerPlayer;
+  });
+
+  // 2. Stand Players (bonus split among players with same timing)
+  let standBonuses = standPlayers.map(player => {
+    let bonusPercent = 0;
+    if (player.standTiming === 2) bonusPercent = 0.15; // 15%
+    else if (player.standTiming === 1) bonusPercent = 0.1; // 10%
+
+    // Count players with same timing to split the bonus
+    const sameTimingCount = standPlayers.filter(p => p.standTiming === player.standTiming).length;
+    const bonus = (bonusPercent * potAmount) / sameTimingCount;
+    totalBonusAmount += bonus;
+    return bonus;
+  });
+
+  // 3. DD Players (5% split among all DD players)
+  let ddBonusPerPlayer = ddPlayers.length > 0 ? (0.05 * potAmount) / ddPlayers.length : 0;
+  totalBonusAmount += ddBonusPerPlayer * ddPlayers.length;
+
+  // Calculate remaining amount to be distributed equally
+  const remainingAmount = Math.max(0, potAmount - totalBonusAmount);
+  const totalPlayers = players.length;
+  const baseAmount = remainingAmount / totalPlayers;
+
+  // Calculate final amounts
+  let results = {
+    DD_Players: ddPlayers.map(player => ({
+      id: player.id,
+      amount: baseAmount + ddBonusPerPlayer,
+    })),
+    Stand_Players: standPlayers.map((player, index) => ({
+      id: player.id,
+      amount: baseAmount + standBonuses[index],
+    })),
+    No_Action_Players: noActionPlayers.map((player, index) => ({
+      id: player.id,
+      amount: baseAmount + noActionBonuses[index],
+    })),
+    Pot_Amount: potAmount,
+  };
+
+  return results;
+}
+      
+      
       function createPlayerCard() {
         const div = document.createElement('div');
         div.className = 'player-card';
